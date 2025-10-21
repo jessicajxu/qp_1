@@ -29,90 +29,156 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % your title/author/date information go here
-\title{\LaTeX\ Template for STAT 548 Qualifying Paper Report} % replace with your title, a meaningful title
+\title{An overview of MAPLE QP.. STAT 548} % replace with your title, a meaningful title
 \author{Jessica Xu} % replace with your name
-\date{October 20, 2025} % replace with your submission date
+\date{October 24, 2025} % replace with your submission date
 
 
 % start of document
 \begin{document}
 \maketitle
 
-
-\section{Requirements}\label{sec:req}
-
-As described on my website
-\url{https://dajmcdon.github.io/teaching/stat548.html}, the report should
-contain three main sections:
-
-\bdesc
-\item[1. Summary ($\sim$3 pages)] The first section of the report should provide a
-summary of the paper and the problem(s) it addresses, including its relationship
-to any previous work, its major contributions (e.g., novel techniques,
-algorithmic developments, problem formulations, theoretical contributions), and
-any limitations or shortcomings (e.g., restrictive assumptions, computational
-constraints, flawed methodology). The aim of this section is for you to
-synthesize the findings of a body of work and clearly present the important
-points.
-
-\item[2. Mini-proposal(s) for research projects] Each proposal should describe a
-research project that applies, extends, generalizes, adapts, or addresses
-shortcomings of the QP. Seemingly unrelated ideas inspired by the original QP
-are also fine. You may write more than one proposal, but you must write at least
-one. A proposal should concisely describe: the primary problem to be addressed;
-an approach (or multiple approaches) for addressing the problem; any technical
-or conceptual sub-problems; the potential impact of the project. You are not
-expected to pursue any of these projects (though we can talk more if you would
-like to). The aim of this section is to get you thinking creatively about
-research, and to begin developing the skills necessary for writing research
-proposals. Each proposal should be no more than \textbf{2 pages max}.
-
-\item[3. QP specific project results] Each potential QP listed below has a brief
-description of a related project. We will discuss the project in detail in our
-initial meeting, and we can meet again (as many times as necessary) before the
-report due date. Your grade will not be affected by how good the results look,
-whether your approach improves on past work, or whether you achieve the initial
-goal of the project. I will use this project to evaluate your research 
-potential, which includes (among other aspects):
-  \bitem
-  \item clearly formulating a research question;
-  \item setting up a useful mathematical framework for the problem;
-  \item thinking creatively and independently to develop a solution;
-  \item relating the problem to existing work, in other fields if necessary;
-  \item being resourceful and asking questions when necessary;
-  \item learning from and moving past the inevitable setbacks;
-  \item reformulating the research problem when necessary;
-  \item implementing new methods in code (when applicable);
-  \item choosing appropriate experiments and metrics;
-  \item communicating and reflecting on progress, setbacks, and results;
-  \item thinking of future research directions.
-  \eitem
-\edesc
-
-
-The report should be submitted as a GitHub repository based on the template
-\href{https://github.com/dajmcdon/qp-template}{here}. The template includes a LaTeX
-style file that should be used for the report. (Detailed instructions for usage
-can be found in the repository's README file.) Any experimental/numerical
-results should be reproducible. All code should be reusable, clearly
-commented/documented, and exist in the \texttt{src/} folder of the same GitHub
-repository to which you give me access as a collaborator. Code can be in any
-language you wish, though my strong preference is for \texttt{R} or
-\texttt{python}.
-
-
-The remainder of this document demonstrates the style file and provides some
-best practices for writing the report. 
-
+% intro about MR??
 \section{Introduction}\label{sec:intro}
+
+Inferring causal effects from observational data is an important problem in many fields, such as medicine, finance, decision making, etc. 
+
+It is especially a problem in healthcare and drug design, where we are often interested in determining the effect of some risk factor on some disease outcome. in many cases, due to ethical concerns, randomized controlled trials are not possible. 
+
+Mendelian randomization (MR) has been a useful in circumventing this issue by using genetic variants, particularly single-nucleotide polymorphisms (SNPs), as instrumental variables (IVs), particularly with the recent rise in publically available GWAS summary statistics. 
+
+Instrumental variables have the following assumptions:
+* relevance
+* independence
+* exclusion
+
+Mendelian randomization makes use of Mendel's law of segregation and law of independent assortment to satisfy these conditions..? maybe??
+
+MR analysis can typically be broken down into 3 main steps. 
+1. GWAS inputs for both our exposure and outcome of interest. this can come from GWAS summary statistics
+2. determining which SNPs are IVs
+3. estimating causal effects
+
+
+Existing problems
+
+there are 2 main issues that may violate the validity of MR.
+
+1. pleiotropy: where one SNP affects multiple traits. in particular horizontal pleiotropy, where the SNP can  affect other exposure-outcome confounders, can pose an issue to the IV assumption of independence. there's also uncorrelated horizontal pleiotropy - which is akin to random noise and resuts in inflated variance. (snp affects outcome through pathways that are independent of the exposure)
+
+2. GWAS sample structure. most MR methods use 2 GWAS samples, one for the exposure and one for the outcome. most 2 sample MR methods assume that these 2 samples are independent of one another, but this may not be true. due to the size and way gwas is collected, it is very likely there may be significant overlap. there is also the issue of cryptic relatedness, where distant relatives are in the GWAS data but not reported, and population stratification where there are different ancestries/ethnicities in the GWAS data that is unaccounted for.
+
+3. linkage disequilibrium. in order to assume independence of SNPs, many methods will do LD clumping. however, complex traits may be impacted by multiple SNPs in LD, and LD clumping may resut in a loss of power and information. (we won't be able to model as much variation in the exposure).
+
+together, these issues can lead to biased estimates and inflated errors. many existing MR methods such as [names.........] can model pleiotropic effects, and [these methods WITH CITATIONS] can account for GWAS sample structure....
+
+However, none of the existing MR methods are able to account for all these issues jointly. This paper introduces a novel MR framework with self-adaptive determination of sample structure and multiple pleiotropic effects (MAPLE) that is able to address this. .... maybe more??
+
+
+high level overview of maple
+likelihood based method
+
+problem defintion
+$x$ - the vector of individuals for exposure ($n_1$)
+$y$ - the vector of individuals for outcome ($n_2$)
+
+pick $p$ SNP's associated with exposure
+* likely are in LD with one another
+
+$G_1$ is n1 x p matrix for p SNPs in exposure dataset 
+
+but we typically don't have these individual level data - usually only summary level statistics
+
+so take $z_1$ and $z_2$ a p vector each. (one for exposure and one for outcome), each with the $p$ candidate SNPs. these are the marginal $z$ values (from the GWAS summary statistics) 
+
+$\Sigma_1$ and $\Sigma_2$ are the LD structures of the p-correlated SNPs for the exposure and the outcome.
+
+MAPLE defines the following equations
+
+\[
+\label{eq:1}
+\mathbf z_1 = \sqrt{n_1-1} \Sigma_1\beta+\epsilon_1\]
+\[
+\label{eq:2}
+\mathbf z_2 = \sqrt{n_2-1}\Sigma_2\beta\alpha+\sqrt{n_2-1}\Sigma_2 \eta_c + \sqrt{n_2-1}\Sigma_2\eta_u +\epsilon_2\]
+
+where,
+
+$\beta$ is the SNP effect sizes on exposure, $\alpha$ is the causal effect of exposure on outcome. $\eta_c$ and $\eta_u$ are the correlated and uncorrelated pleiotropic effects on the outcome, and $\epsilon_1$, $\epsilon_2$ are the residual errors, and are assumed that $(\epsilon_{1j}, \epsilon_{2j})\sim N(0, \Omega)$, where $\Omega$ is [WHAT IS IT??]
+
+Since $\Sigma_1$ and $\Sigma_2$ are often unknown, we typically estimate them using the LD reference panel, thus we often have that $\Sigma_1=\Sigma_2 = \Sigma$
+
+Thus, this gives us the following formulation
+
+\[
+\label{eq:3}
+(z_1, z_2) \sim MN(......)
+\]
+
+notes:
+* $\Sigma$ is a pxp row covariance matrix of the covariance between the marginal z scores across the SNPs
+$\Omega$ is the 2x2 covariance matrix of the covariance between the marginal z scores on exposure on that on the outcome - this helps to account for sample structure
+
+since we don't do LD clumping, we need a way to distinguish between candidate SNPs that have an effect on the exposure and SNPs that are correlated/in LD with the true causal SNPs or due to bias in sample structure.
+
+maple models sample structure directly by the covariance matrix $\Omega$ and a spike and slab prior on $\beta_j$
+* explain the prior on beta
+
+then, based on that we get the selected SNPs that have beta neq 0
+
+so these SNPs have a non zero effect on exposure, meaning  they may affect the outcome in different ways
+1. through the causal effect (vertical pleiotropy) alpha
+2. horizontal pleiotropic effect $\eta_c $- unobserved confounder of exposure-outcome
+* and we assume a probability of this happening $\pi_c$
+3. uncorrelated horizontal pleiotropic effects 
+
+and we assume dif distributions on eahc.
+
+so we can place each of our p corerlated snp's into the following 6 groups
+1. vertical pleiotropy only
+2. verticle pleiotropy and correlated
+3. vertical and uncorrelated
+4. uncorrelated only
+5. vertical, correlated, uncorrelated
+6. no pleiotropy
+
+so with thise framework, we can reformulate our maple framework
+
+equation 4 in paper
+
+
+
+because of the way we set up maple and allow for horizonrtal pleiotropy (uncorrelated and correlated) - this violates our traditional MR criteria of having SNPs that can only affect outcome through exposure
+
+our goal is to estimate the causal effect $\alpha$
+ use a 2 stage procedure to estiamte $\alpha$ and then test the null hypothesis that $\alpha = 0$
+
+ use single trait and bivariate LDSC to estiamte $\hat \Omega$. then use lijkelihood to estimate $\alpha$ (since this is intractable, we use Gibbs sampling to get posterior draws of $\alpha$. then we use methods of moments to get MLE $\hat \alpha$ and SE and then can get p value from wald test.
+
+\section{Significance}\label{sec:sig}
+
+no other method does it as well..???
+
+
+\section{Limitations}\label{sec:limitation}
+
+
+\section{Novel ideas}\label{sec:new_methods}
+
+\section{Results}\label{sec:results}
+
+\section{Discussion}\label{sec:discussion}
+ 
 
 We write some math for fun:
 
 \[
-\label{eq:1}
+\label{eq:extra}
 \int_{-\infty}^{\infty} \frac{1}{\sqrt{2\pi}|\Sigma|^{n/2}}
 \exp\cbra*{-\frac{1}{2}(y - \mu)\T \Sigma^{-1} (y-\mu)} \d y = 1.
 \]
+
+
 
 We encourage the use of the various macros defined in
 \href{https://github.com/trevorcampbell/shortex/}{ShorTeX},
