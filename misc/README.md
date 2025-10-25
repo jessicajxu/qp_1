@@ -1,3 +1,0 @@
-## misc
-
-miscellaneous goes here

@@ -1,4 +1,6 @@
 # Report goes here.
+# QP report
 
 * compile `main.tex` to generate the report
-* you shouldn't have to make changes to `main.tex`. All of your writing should happen in the subfiles in `sections`.
+* Figures used in the report can be found in the fig folder
+* References can be found in the qp.bib file

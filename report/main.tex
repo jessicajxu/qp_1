@@ -5,12 +5,11 @@
 % Date: 26 August 2024
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Note: You will get an empty bibliography warning when compiling until you include a citation.
-
 \documentclass[12pt]{article}
 \usepackage[commenters={OA,DJM}]{shortex} % replace OA with your initials
 \usepackage[round]{natbib}
 \usepackage[margin=2.5cm]{geometry}
+\usepackage[indent]{parskip}
 \newcommand{\email}[1]{\href{mailto:#1}{#1}}
 
 % minor adjustments to ShorTeX
@@ -28,113 +27,87 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% your title/author/date information go here
-\title{TITLE IN PROGRESS..QP} % replace with your title, a meaningful title
-\author{Jessica Xu} % replace with your name
-\date{October 24, 2025} % replace with your submission date
+\title{%
+  Overview of MAPLE\\
+  \large Mendelian randomization analysis with self-adaptive \\
+  determination of sample structure and multiple pleiotropic effects}
+\author{Jessica Xu}
+\date{October 24, 2025} % submission date
 
 
 % start of document
 \begin{document}
 \maketitle
 \newpage
-% intro about MR??
 \section{Introduction}\label{sec:intro}
 
-A central goal in medicine and biomedical research is to infer causal relationships between risk factors (exposures) and outcomes, to improve our understanding of disease mechanisms and inform drug design. However, randomized controlled trials (RCTs), which are the gold standard in causal inference, are often infeasible due to ethical or practical constraints, motivating the need to infer causal effects from observational data.
+A central goal in medicine and biomedical research is to infer causal relationships between risk factors (exposures) and outcomes, to improve our understanding of disease mechanisms and inform drug design. However, randomized controlled trials (RCTs), which are the gold standard in causal inference, are often infeasible due to ethical or practical constraints, motivating the need to infer causal effects from observational data \citep{Deaton2018}.
 
-With the increasing availability of genome-wide association study (GWAS) data, Mendelian randomization (MR) has emerged as a valuable framework for causal inference [1]. MR uses genetic variants, typically single-nucleotide polymorphisms (SNPs), as instrumental variables (IVs) for an exposure, to estimate causal effects on an outcome [1].
 
-MR analysis can generally be broken down into three steps [1]:
+With the increasing availability of genome-wide association study (GWAS) data, Mendelian randomization (MR) has emerged as a valuable framework for causal inference \citep{DaveySmith2003}. MR uses genetic variants, typically single-nucleotide polymorphisms (SNPs), as instrumental variables (IVs) for an exposure, to estimate causal effects on an outcome \citep{DaveySmith2003}.
 
+
+MR analysis can generally be broken down into three steps as shown in \cref{fig:1} \citep{Zhang2025}:
 \begin{enumerate}
     \item Obtaining GWAS summary statistics for the exposure and the outcome.
     \item Selecting SNPs that serve as valid IVs.
     \item Causal effect estimation of the exposure on the outcome
 \end{enumerate}
 
-For IVs to be valid, three assumptions must hold [2]:
-\begin{enumerate}
-    \item Relevance: IVs are associated with the exposure.
-    \item Independence: IVs are independent of any confounders of the exposure–outcome relationship.
-    \item Exclusion restriction: IVs influence the outcome only through the exposure.
-\end{enumerate}
+For IVs to be valid, three assumptions must hold: (i) relevance - IVs are associated with the exposure, (ii) independence - IVs are independent of any confounders of the exposure–outcome relationship, and (iii) exclusion restriction - IVs influence the outcome only through the exposure \citep{Angrist1996}. However, in practice, these assumptions are frequently violated due to pleiotropy, sample structure, and linkage disequilibrium (LD) \citep{Zhang2025}.
 
-However, in practice, these assumptions are frequently violated due to pleiotropy, sample structure, and linkage disequilibrium (LD) [1, 3].
+\paragraph{Pleiotropy}
+Pleiotropy occurs when a SNP affects multiple traits, and can occur in different ways. Vertical pleiotropy, where the SNP affects the outcome \textit{only} through its effect on the exposure, is consistent with the IV assumptions and reflects the true causal pathway we are interested in estimating. However, correlated horizontal pleiotropy, where a SNP influences a confounder of the exposure–outcome pair, violates the independence assumption because the SNP is no longer independent of confounders. Alternatively, uncorrelated horizontal pleiotropy, where a SNP influences the outcome through factors independent of the exposure, violates the exclusion assumption. Uncorrelated pleiotropy acts like random noise, inflating standard errors, whereas correlated pleiotropy biases causal estimates.
 
-Pleiotropy occurs when a SNP affects multiple traits. Correlated horizontal pleiotropy, where a SNP influences a confounder of the exposure–outcome pair, violates the independence assumption because the SNP is no longer independent of confounders. Alternatively, uncorrelated horizontal pleiotropy, where a SNP influences the outcome through factors independent of the exposure, violates the exclusion assumption. Uncorrelated pleiotropy acts like random noise, inflating standard errors, whereas correlated pleiotropy biases causal estimates. In contrast, vertical pleiotropy, where the SNP affects the outcome only through its effect on the exposure, is consistent with the IV assumptions and reflects the true causal pathway we are interested in estimating.
+\paragraph{Sample structure} 
+Sample structure issues include population stratification, cryptic relatedness, and sample overlap between the exposure and outcome GWAS data. Population stratification arises when allele frequencies and trait values differ systematically across ancestral subgroups in the sample (typically due to geography or ethnicity), leading to confounding by ancestry. Cryptic relatedness refers to the unaccounted presence of related individuals in the GWAS data. This induces correlation among genotypes, violating the independence assumption through shared environmental or familial confounders. Sample overlap occurs when the exposure and outcome GWAS data share individuals. Most MR analyses use two-sample MR, where exposure and outcome summary statistics are obtained from independent GWAS samples, to avoid overfitting inherent in one-sample settings \citep{Hu2022, Zhang2025}. However, if these samples overlap substantially, the SNP–exposure and SNP–outcome effect estimates become correlated, and thus biased if not accounted for. 
 
+\paragraph{Linkage disequilibrium (LD)} 
+LD refers to the correlation between SNPs, often due to their proximity on the chromosome. A SNP that has no effect on the exposure may appear to be associated with it, if it is in LD with a causal SNP, violating the relevance assumption. Moreover, LD between SNPs affecting different traits can lead to apparent pleiotropic effects that violate the exclusion restriction assumption. To mitigate LD, many existing MR methods perform LD clumping, in order to retain a group of approximately independent SNPs \citep{Hu2022, Zhang2025}. However, this may discard valid SNPs, resulting in reduced power.
 
-Sample structure issues include population stratification, cryptic relatedness, and sample overlap between the exposure and outcome GWAS data. Population stratification arises when allele frequencies and trait values differ systematically across ancestral subgroups in the sample (typically due to geography or ethnicity). This violates the independence assumption, as the SNPs become confounded with ancestry. Cryptic relatedness refers to the unaccounted presence of related individuals in the GWAS data. This induces correlation among genotypes, violating the independence assumption through shared environmental or familial confounders. Sample overlap occurs when the exposure and outcome GWAS data share participants. Most MR analyses use two-sample MR, where exposure and outcome summary statistics are obtained from independent GWAS samples, to avoid overfitting inherent in one-sample settings. However, if these samples overlap substantially, the SNP–exposure and SNP–outcome effect estimates become correlated. 
+Together, these challenges can lead to biased or inefficient causal estimates. Existing MR methods have made progress in addressing some of these issues \citep{Zhang2025}. However, none of the existing MR methods are able to account for all three issues jointly. 
 
-Linkage disequilibrium (LD) refers to the correlation between SNPs, often due to their proximity on the chromosome. A SNP that has no effect on the exposure may appear to be associated with it, if it is in LD with a causal SNP, violating the relevance assumption. Moreover, LD between SNPs affecting different traits can lead to apparent pleiotropic effects that violate the exclusion restriction assumption. To mitigate LD, many existing MR methods perform LD clumping, retaining only approximately independent SNPs [3, 4, 5]. However, this procedure may discard valid SNPs, resulting in reduced power.
+To address this, \citet{Zhang2025} propose MAPLE (Mendelian randomization with adaptive determination of sample structure and pleiotropy), a likelihood-based framework that simultaneously accounts for LD, pleiotropy, and GWAS sample structure. In this report, we summarize how MAPLE works, address some of its limitations, and outline areas for future direction. 
 
-Together, these challenges can lead to biased or inefficient causal estimates. Existing MR methods have made progress in addressing some of these issues, for instance MR-APSS is able to adjust for sample structure [3], while CAUSE and MR-CUE model horizontal pleiotropic effects [4, 5]. However, none of the existing MR methods are able to account for all three issues jointly. 
-
-To address this, Zhang et al. propose MAPLE (Mendelian randomization with Adaptive determination of sample structure and PLEiotropy), a likelihood-based framework that simultaneously accounts for LD, pleiotropy, and GWAS sample structure [6].
-
-
-
-
-\section{Overview of MAPLE}\label{sec:maple}
+\section{Overview of MAPLE \citep{Zhang2025}}\label{sec:maple}
 
 \subsection{Problem Definition}
 
 MAPLE begins by selecting $p$ candidate SNPs associated with the exposure based on genome-wide significance. These SNPs may be in LD with one another.
 
-From the GWAS summary statistics, we obtain $\mathbf{z_1}$ and $\mathbf{z_2}$, which are $p$-dimensional vectors containing the marginal $Z$-scores of the SNP–exposure and SNP–outcome associations, respectively.
+From the GWAS summary statistics, we obtain $\mathbf{z_1}$ and $\mathbf{z_2}$, which are $p$-dimensional vectors containing the marginal z-scores of the SNP-exposure and SNP-outcome associations, respectively.
 
-MAPLE models these statistics as:
-
+MAPLE models these statistics as given in \cref{eq:z1} and \cref{eq:z2},
 \[\label{eq:z1}
 \mathbf z_1 = \sqrt{n_1-1} \boldsymbol{\Sigma_1 \beta}+\boldsymbol \epsilon_1\]
 \[\label{eq:z2}
 \mathbf z_2 = \sqrt{n_2-1}\boldsymbol{\Sigma_2}(\boldsymbol{\beta\alpha}+\boldsymbol{ \eta_c }+ \boldsymbol{\eta_u} )+\boldsymbol\epsilon_2\]
-
-
 where 
-
 \begin{itemize}
-    \item $n_1$ and $n_2$ are the GWAS sample sizes in the exposure and outcome data, respectively
-    \item $\boldsymbol\Sigma_1$ and $\boldsymbol\Sigma_2$ are the $p\times p$ LD structures of the exposure and outcome GWAS data
-    \item $\boldsymbol \beta$  is the SNP effect size on the exposure
-    \item $\boldsymbol \alpha$ is the causal effect of the exposure on the outcome
-    \item $\boldsymbol\eta_c, \boldsymbol \eta_u$ are the correlated and uncorrelated horizontal pleiotropic effects
-    \item $\boldsymbol{\epsilon_1}$ and $\boldsymbol{\epsilon_2}$ are residual errors distributed $N(0, \boldsymbol{\Omega})$, where $\boldsymbol{\Omega}$ accounts for sample structure
+    \item $n_1$ and $n_2$ are the GWAS sample sizes in the exposure and outcome data,
+    \item $\boldsymbol\Sigma_1$ and $\boldsymbol\Sigma_2$ are the $p\times p$ LD structures of the exposure and outcome GWAS data,
+    \item $\boldsymbol \beta$  is the SNP effect size on the exposure,
+    \item $\boldsymbol \alpha$ is the causal effect of the exposure on the outcome,
+    \item $\boldsymbol\eta_c, \boldsymbol \eta_u$ are the correlated and uncorrelated horizontal pleiotropic effects, and
+    \item $\boldsymbol{\epsilon_1}$ and $\boldsymbol{\epsilon_2}$ are residual errors distributed $N(0, \boldsymbol{\Omega})$, where $\boldsymbol{\Omega}$ accounts for sample structure.
 \end{itemize}
 
-Since individual-level GWAS data are typically unavailable, $\boldsymbol\Sigma_1$ and $\boldsymbol\Sigma_2$ are often unknown. Thus MAPLE uses an LD reference panel (from a matched ancestry) to approximate $\boldsymbol{\Sigma_1} = \boldsymbol{\Sigma_2} = \boldsymbol{\Sigma}$. The joint model is then:
-
+Since individual-level GWAS data are typically unavailable, $\boldsymbol\Sigma_1$ and $\boldsymbol\Sigma_2$ are often unknown. Thus, MAPLE uses an LD reference panel (from a matched ancestry) to approximate $\boldsymbol{\Sigma_1} = \boldsymbol{\Sigma_2} = \boldsymbol{\Sigma}$. The joint model is then given by \cref{eq:mn}, with the goal of estimating $\alpha$.
 \[
 \label{eq:mn}
 (\mathbf z_1, \mathbf z_2) \sim MN (\boldsymbol \Sigma(\sqrt{n_1-1}\boldsymbol\beta,\sqrt{n_2-1}(\boldsymbol{\beta\alpha}+\boldsymbol{ \eta_c }+ \boldsymbol{\eta_u} ), \boldsymbol \Sigma, \boldsymbol \Omega )
 \]
 
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{report/fig/fig1.jpg}
+    \caption{The three general steps of MR analysis in MAPLE. (A) MAPLE requires the following inputs: marginal z-scores for SNP effect on the exposure and outcome for each candidate SNP, an LD reference panel $\boldsymbol\Sigma$ used to approximate the LD structure of the exposure and outcome data, and GWAS summary statistics for LDSC to explicitly model the sample structure $\boldsymbol\Omega$. (B) MAPLE selects $p$ correlated candidate SNPs that are associated with the exposure, and will categorize them into one of six pleiotropic groups. (C) Using the inputs of the z-scores, $\boldsymbol\Sigma$, and the estimated $\boldsymbol{\hat \Omega}$, MAPLE uses Gibbs sampling to obtain posterior draws of $\alpha$, the causal effect of the exposure on the outcome, and approximates a maximum likelihood estimate $\hat \alpha$. Adapted from \citet{Zhang2025}, p. 1965.}
+    \label{fig:1}
+\end{figure}
 
-with the goal of estimating $\alpha$.
-
-\subsection{SNP Heterogeneity and Priors}
-
-Due to LD, correlated SNPs may include variants not truly associated with the exposure. Instead of using LD clumping, MAPLE places a spike-and-slab prior on $\beta_j$:
-
-\[ \beta_j \sim \pi_\beta N(0, \sigma^2_\beta) + (1-\pi_\beta)\delta_0\]
-
-where $\delta_0$ denotes the Dirac function for point mass at zero. Thus, each SNP has probability $1 - \pi_\beta$ of having no effect on the exposure, and probability $\pi_\beta$ of having a normally distributed effect.
-
-
-The prior for the correlated horizontal pleiotropy $\boldsymbol \eta_c$ is
-\[  \eta_{c,j} \sim \pi_c \omega \beta_j + (1-\pi_c)\delta_0\] 
-
-where $\pi_c$ is the probability that SNP $j$ exhibits correlated pleiotropy, and $\omega$ represents the effect of an unmeasured confounder on the outcome. MAPLE assumes that $\pi_c$ is small to ensure that we can distinguish SNPs whose effects on the outcome arise purely through vertical pleiotropy from those whose effects are confounded by correlated horizontal pleiotropy.
-
-The prior for the uncorrelated horizontal pleiotropy $\boldsymbol \eta_u$
-\[  \eta_{u,j} \sim \pi_1 N(0,\sigma_\eta^2) + (1-\pi_1)\delta_0\] 
-where $\pi_1$ is the probability that a SNP exhibits uncorrelated pleiotropy and $\sigma_\eta^2$ captures the variance of these effects.
-
-These models allow us to probabilistically assign each SNP into one of the following groups: (1) vertical pleiotropy, (2) vertical and correlated pleiotropy, (3) vertical and uncorrelated pleiotropy, (4) uncorrelated pleiotropy, (5) vertical, correlated, and uncorrelated pleiotropy, and (6) no pleiotropy.
 
 \subsection{Estimation Procedure}
-MAPLE runs in two stages, and requires marginal $Z$-scores of candidate SNPs, an LD reference panel, and GWAS summary statistics for the exposure and outcome. At the first stage, MAPLE estimates the sample structure matrix $\Omega$ using LD score regression (LDSC), which gives
+MAPLE runs in two stages, and requires marginal z-scores of candidate SNPs, an LD reference panel, and GWAS summary statistics for the exposure and outcome as inputs, as shown in \cref{fig:1}A. At the first stage, MAPLE estimates the sample structure matrix $\boldsymbol\Omega$ using LD score regression (LDSC) to get
 
 \[ \boldsymbol{\hat\Omega} = \begin{pmatrix}
 t_1 & t_{12}\\
@@ -142,171 +115,122 @@ t_{12} &t_2
 \end{pmatrix} 	
 \]
 
-where $t_1$ and $t_2$ are univariate LDSC intercepts (for exposure and outcome), and $t_{12}$ is the bivariate LDSC intercept. Deviations of $(t_1, t_2, t_{12})$ from $(1, 1, 0)$ indicate population stratification, cryptic relatedness, or sample overlap.
+where $t_1$ and $t_2$ are the univariate LDSC intercepts (for exposure and outcome), and $t_{12}$ is the bivariate LDSC intercept. Deviations of $(t_1, t_2, t_{12})$ from $(1, 1, 0)$ indicate population stratification, cryptic relatedness, or sample overlap.
 
-The next stage involves deriving the likelihood of $\alpha$. MAPLE substitutes $\boldsymbol{\hat\Omega}$ into \cref{eq:mn} and performs Gibbs sampling to output posteriors draws of $\alpha$.
+The next stage involves deriving the likelihood of $\alpha$. MAPLE substitutes $\boldsymbol{\hat\Omega}$ into \cref{eq:mn} and performs Gibbs sampling to output posteriors draws of $\alpha$. Using these posterior samples, MAPLE then outputs an approximate maximum-likelihood estimate $\hat \alpha$, the standard error, and the $p$-value from the 2 sided Wald test ($H_0: \alpha=0$).
 
-Thus in order to run MAPLE, as inputs it takes the marginal z scores of the candidate SNPs, an LD reference panel, and GWAS summary statistics. MAPLE outputs $\hat \alpha$, and posterior mean of the other estimated parameters.
+\subsection{SNP Heterogeneity and Priors}\label{sec:priors}
 
+Due to LD, correlated SNPs may include variants not truly associated with the exposure. To account for this heterogeneity in SNPs, MAPLE places a spike-and-slab prior on $\beta_j$, shown in \cref{eq:b_prior},
 
-\section{Main Contributions}\label{sec:sig}
+\[\label{eq:b_prior}
+\beta_j \sim \pi_\beta N(0, \sigma^2_\beta) + (1-\pi_\beta)\delta_0\]
+where $\delta_0$ denotes the Dirac function for point mass at zero. Thus, each SNP has probability $1 - \pi_\beta$ of having no effect on the exposure, and probability $\pi_\beta$ of having a normally distributed effect with mean 0 and variance $\sigma_\beta^2$.
 
-In their paper, Zhang et al propose a maximum-likelihood framework for the joint distribution of exposure and outcome SNP associations [6]. The main contributions include (1) self-adaptive sample structure estimation, (2) flexible pleiotropy modeling, (3) allowing the use of correlated SNPs.
+The prior for the correlated horizontal pleiotropy effect $\boldsymbol \eta_c$ is shown in \cref{eq:hc_prior},
+\[ \label{eq:hc_prior}
+\eta_{c,j} \sim \pi_c \omega \beta_j + (1-\pi_c)\delta_0\] where $\pi_c$ is the probability that a SNP exhibits correlated pleiotropy, and $\omega$ represents the effect of an unmeasured confounder on the outcome. MAPLE assumes that $\pi_c$ is small to ensure that we can distinguish SNPs whose effects on the outcome arise purely through vertical pleiotropy from those whose effects are confounded by correlated horizontal pleiotropy.
 
-Unlike many existing two-sample MR approaches, MAPLE does not assume independence between exposure and outcome GWAS samples. Instead, it explicitly models the correlation between their summary statistics through a covariance matrix $\boldsymbol\Omega$ which captures sample overlap, population stratification, and cryptic relatedness. This matrix is estimated directly from the data using LDSC, providing a self-adaptive correction for sample structure. As a result, MAPLE can produce unbiased causal effect estimates even when the GWAS samples are partially overlapping or exhibit shared confounding,conditions under which traditional MR methods (e.g., IVW, MR-Egger) often break down.
+The prior for the uncorrelated horizontal pleiotropy effect $\boldsymbol \eta_u$ is shown in \cref{eq:uc_prior},
+\[ \label{eq:uc_prior}
+\eta_{u,j} \sim \pi_1 N(0,\sigma_\eta^2) + (1-\pi_1)\delta_0\]
+where $\pi_1$ is the probability that a SNP exhibits uncorrelated pleiotropy and $\sigma_\eta^2$ captures the variance of these effects.
 
-Second, MAPLE introduces a flexible pleiotropy modeling framework that distinguishes between multiple sources of pleiotropy. In particular, the model decomposes the SNP–outcome effects into three components: (1) vertical pleiotropy, parameterized by $\alpha$, (2) correlated pleiotropy effects $\boldsymbol \eta_c$, and (3) uncorrelated pleiotropy effects $\boldsymbol \eta_u$. By modeling these effects jointly within a hierarchical framework, MAPLE captures the heterogeneity of SNP-level mechanisms, and each SNP is probabilistically assigned to one of six pleiotropy categories. 
-%This flexible structure allows MAPLE include SNPs that exhibit weak or heterogeneous pleiotropy, providing more robust causal effect estimation compared to single-direction pleiotropy corrections (e.g., MR-Egger, CAUSE).
+This modeling allows us to probabilistically assign each SNP to one of the following groups: (i) vertical pleiotropy, (ii) vertical and correlated pleiotropy, (iii) vertical and uncorrelated pleiotropy, (iv) uncorrelated pleiotropy, (v) vertical, correlated, and uncorrelated pleiotropy, and (vi) no pleiotropy, as shown in \cref{fig:1}B. 
 
-Additionally, MAPLE is designed to incorporate correlated SNPs directly through the linkage disequilibrium (LD) covariance matrix $\Sigma$. Rather than relying on LD clumping to enforce independence across SNPs, MAPLE integrates LD information into its joint likelihood, thereby accounting for correlations among SNPs when estimating effect sizes. This approach allows for the inclusion of a much larger set of SNPs in the analysis, preserving information that is typically discarded by clumping-based MR methods, increasing statistical power.
+\section{Main Contributions and Significance}\label{sec:sig}
+In their paper, \citet{Zhang2025} propose a maximum-likelihood framework for the joint distribution of exposure and outcome SNP associations. The main contributions of this method include (i) self-adaptive sample structure estimation, (ii) flexible pleiotropy modeling, (iii) allowing the use of correlated SNPs.
 
-Through simulations Zhang et al were able to show that MAPLE was able to control type 1 error, reduce false positives, and yield higher power compared to existing MR methods [6]. Together, these contributions make MAPLE one of the first MR frameworks to jointly model pleiotropy, sample structure, and LD. The method broadens the applicability of MR to broader and more realistic genomic settings where traditional assumptions rarely hold.
+Unlike many existing two-sample MR approaches \citep{Zhang2025}, MAPLE does not assume independence between exposure and outcome GWAS samples. Instead, it explicitly models the correlation between their summary statistics through the covariance matrix $\boldsymbol\Omega$, which captures sample overlap, population stratification, and cryptic relatedness. This matrix is estimated directly from the data using LDSC, providing a self-adaptive correction for sample structure. As a result, MAPLE can produce unbiased causal effect estimates even when the GWAS samples are partially overlapping or exhibit shared confounding, conditions under which traditional MR methods (such as IVW) often break down \citep{Hu2022}. 
+
+Second, MAPLE introduces a flexible pleiotropy modeling framework that distinguishes between multiple sources of pleiotropy. In particular, the model decomposes the SNP–outcome associations into three components: (1) vertical pleiotropy, parameterized by $\alpha$, (2) correlated pleiotropy effects $\boldsymbol \eta_c$, and (3) uncorrelated pleiotropy effects $\boldsymbol \eta_u$. By modeling these effects jointly within a hierarchical framework, MAPLE captures the heterogeneity of SNPs, and each SNP is probabilistically assigned to one of six pleiotropy categories. This flexible structure allows MAPLE to include and model SNPs that exhibit weak or heterogeneous pleiotropy, providing more robust causal effect estimation \citep{Zhang2025}.
+
+Additionally, MAPLE is designed to incorporate correlated SNPs directly through the linkage disequilibrium (LD) covariance matrix $\Sigma$. Rather than relying on methods like LD clumping to enforce independence across SNPs, MAPLE integrates LD information into its joint likelihood, thus accounting for correlations among SNPs when estimating effect sizes. This approach allows for the inclusion of a much larger set of SNPs in the analysis, preserving information that is typically discarded by clumping-based MR methods, which increases statistical power \citep{Zhang2025}. 
+
+Through simulations, Zhang et al. were able to show that MAPLE was able to control type 1 error, reduce false positives, and produce higher power compared to existing MR methods. In real data applications, MAPLE was able to identify biologically plausible causal effects, where existing methods failed, supporting its robustness. Together, these contributions make MAPLE one of the first MR frameworks to jointly model pleiotropy, sample structure, and LD. The method broadens the applicability of MR to broader and more realistic genomic settings where traditional assumptions rarely hold.
 
 \section{Limitations}\label{sec:limitation}
+Despite its advantages, MAPLE has several limitations. One limitation lies in MAPLE’s reliance on LDSC to estimate the sample structure matrix $\boldsymbol{\Omega}$. LDSC assumes that SNP effect sizes are approximately proportional to LD scores \citep{BS2015, PattilloSmith2024}. This assumption can be violated in traits with few associated SNPs, in GWAS with ancestry mismatch between the summary statistics and the LD reference panel, or in regions with extensive LD, which can lead to biased estimates of $\boldsymbol{\hat\Omega}$ \citep{PattilloSmith2024}. This may distort downstream estimates of $\hat{\alpha}$. Additionally, MAPLE treats the LDSC intercepts as fixed point estimates, and does not provide a method for incorporating uncertainty of the LDSC estimates into the causal effect inference, which may result in overly narrow confidence intervals for $\alpha$ when LDSC estimates are imprecise.
 
-A key limitation lies in MAPLE’s reliance on LDSC to estimate the sample structure matrix $\boldsymbol{\Omega}$. LDSC assumes that SNP effect sizes are approximately proportional to LD scores [7]. This assumption is often violated in traits with few associated SNPs, mismatched ancestry between the GWAS and LD reference panel, or regions of extensive LD, which can lead to biased LDSC intercepts [7]. Since MAPLE uses these intercepts to correct for sample structure, bias in LDSC may distort downstream estimates $\hat{\alpha}$. MAPLE also does not provide a method for incorporating uncertainty of the LDSC estimates into the uncertainty in the causal effects.
+As stated by Zhang et al. and in \cref{sec:priors}, MAPLE relies on the assumption that correlated pleiotropy is relatively sparse across SNPs. When correlated pleiotropy is dense, the model may struggle to distinguish causal pathways from confounding pathways. While this may be a reasonable assumption for certain traits, pleiotropic effects can be widespread, particularly for traits mediated by shared regulatory pathways \citep{Solovieff2013}. Additionally, Zhang et al. do not elaborate on what would be considered sparse correlated pleiotropy, and how to identify when this assumption is not met.
 
-MAPLE relies on the assumption that correlated pleiotropy is relatively sparse across SNPs. In reality, pleiotropic effects can be widespread, particularly for those mediated by shared regulatory mechanisms [7, 8]. When correlated pleiotropy is dense, the model can struggle to distinguish between causal and confounding pathways, leading to identifiability issues and inflated type I error [6]. This limitation implies that MAPLE may perform best for traits where pleiotropy is modest or where confounding arises only from a small subset of loci.
-
-Additionally, MAPLE depends heavily on the quality of the LD matrix $\boldsymbol{\Sigma}$ used to approximate linkage disequilibrium among SNPs. In practice, LD reference panels are often drawn from population-specific datasets (e.g., 1000 Genomes Europeans), which may not perfectly match the ancestry composition of the GWAS samples [6]. Mismatched reference panels can distort correlation structures, leading to inflated $p$-values, spurious associations, or loss of power. MAPLE’s performance relies on the assumption that $\boldsymbol{\Sigma}$ represents the underlying LD in the analyzed data, which may not hold in multi-ethnic or meta-analytic GWAS data.
+While a main contribution of MAPLE is the ability to incorporate correlated SNPs through the LD matrix $\boldsymbol{\Sigma}$, this introduces a dependence on the quality of the LD matrix. $\boldsymbol \Sigma$ is often estimated from an external reference panel, which may not perfectly match the ancestry composition or sample structure of the GWAS data. This may distort correlation structures, impacting downstream inference of causal effects. 
+ 
 
 \section{Novel Ideas}\label{sec:new_methods}
 
-In this project, we will focus on quantifying and incorporating LDSC uncertainty in MAPLE. Specifically, we plan to examine how sampling variability in LDSC intercepts affects $\boldsymbol{\hat{\Omega}}$ and, consequently, MAPLE’s estimation of $\hat{\alpha}$. By simulating MAPLE under perturbed $\boldsymbol{\Omega}$ values, we aim to assess its robustness to uncertainty in sample structure estimation.
+Building on the limitations of MAPLE, we propose several methodological extensions and reformulations in hopes to enhance its robustness. The main focus of this project is to incorporate uncertainty in the sample structure matrix $\boldsymbol{\Omega}$ estimated from LDSC, which MAPLE currently treats as fixed. 
 
-\section{Methods}
-
-In MAPLE, the LDSC intercepts used to estimate $\boldsymbol\Omega$ are treated as fixed. To incorporate uncertainty of LDSC, we simulated
+In MAPLE, the LDSC intercepts used to estimate $\boldsymbol\Omega$ are treated as fixed. To incorporate uncertainty of LDSC, we can simulate
 \[
+\label{eq:ldsc_sim}
 t_k^{(r)} \sim N(\hat{t}_k, \mathrm{SE}(t_k)^2)
 \] 
 where $\hat{t}_k$ and $\mathrm{SE}(t_k)$ denote the LDSC point estimate and standard error, respectively. For each $r = 1, \ldots, R$, we constructed a sampled matrix
 \[
+\label{eq:omega_sim}
 \boldsymbol{\hat\Omega}^{(r)} =
 \begin{pmatrix}
 t_1^{(r)} & t_{12}^{(r)} \\
 t_{12}^{(r)} & t_2^{(r)}
-\end{pmatrix},
+\end{pmatrix}
 \]
 and ran the MAPLE model conditional on $\boldsymbol{\hat\Omega}^{(r)}$ to obtain corresponding estimates $\hat{\alpha}^{(r)}$ and their standard errors $\hat{\sigma}_{\alpha}^{(r)}$.
 
+Another extension is to incorporate variant methods of LDSC, such as interaction-LDSC (i-LDSC) which can account for non-additive genetic effects \citep{PattilloSmith2024}, or covariate-adjusted LDSC (cov-LDSC) \citep{Luo2018} which is more robust for complex traits and admixed populations.
+
+MAPLE assumes that correlated pleiotropy is relatively sparse and linearly related to the exposure effect via the parameter $\omega$. However, as noted in the limitations, pleiotropy can be widespread. One possible extension to address this is to replace the linear pleiotropy model with a flexible nonparametric prior, such as a Gaussian process or mixture-of-normals prior on correlated pleiotropic effects,
+\[
+\eta_c \sim \sum_{k=1}^K \pi_k \, \mathcal{N}(0, \sigma_k^2),
+\]
+for some $K$. This would allow the model to adapt to situations when pleiotropy is dense or for outlier SNPs that have large pleiotropic effects.
 
 
-\section{Results}\label{sec:results}
-\newpage
+\section{Results}
+
+In this section, we evaluated our proposed LDSC-uncertainty extension to MAPLE using $R = 500$ simulations of LDSC intercepts as described in \cref{eq:ldsc_sim}, and running MAPLE conditional on these values. We used the law of total variance to determine the standard error (SE) of $\hat \alpha$ under LDSC uncertainty simulations:
+\[ \mathrm{Var}(\alpha) = \mathbb E(\mathrm{Var}(\alpha |\Omega)) + \mathrm{Var}(\mathbb E(\alpha|\Omega))
+\]
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{report/fig/alpha_plot.png}
+    \caption{Distribution of $\hat \alpha$ estimates under LDSC uncertainty simulations.}
+    \label{fig:hist}
+\end{figure}
+
+\subsection{Data}
+We used the data from the MAPLE documentation \citep{shang2025maple}, which consists of realistically simulated GWAS summary‐statistics derived from the UK Biobank genotype data. Specifically, they generate null simulations on chromosome 1 using $n_1 = n_2 = 20,000$ individuals for the exposure and outcome GWAS, and incorporate realistic LD and sample overlap.
+
+\subsection{Findings}
+\cref{fig:hist} depicts the distribution of the causal effect estimates $\hat \alpha$ under the LDSC-uncertainty extension. Across 500 replicates, the mean causal effect estimate $\hat{\alpha}$ was -0.0423 (SE = 0.0352), consistent with the null hypothesis of no causal effect. As shown in \cref{tab:1}, the two methods produced very similar causal estimates and standard errors under standard LDSC assumptions. The runtime of the original MAPLE model was 16.81 seconds, while the runtime of the LDSC simulated model was much higher at 1.82 hours due to repeated model fitting. Future experiments should test scenarios where LDSC assumptions are violated to better evaluate robustness.
+
+
+
+
 \section{Discussion}\label{sec:discussion}
- 
 
-We write some math for fun:
+This report provided insight into the methodological foundations of the MAPLE framework for MR. Through careful examination of its assumptions, model structure, and simulation design, I developed a deeper understanding of the foundation behind MR and how MAPLE integrates sample structure, LD, and pleiotropy into a unified likelihood model. 
 
-\[
-\label{eq:extra}
-\int_{-\infty}^{\infty} \frac{1}{\sqrt{2\pi}|\Sigma|^{n/2}}
-\exp\cbra*{-\frac{1}{2}(y - \mu)\T \Sigma^{-1} (y-\mu)} \d y = 1.
-\]
-
-
-
-We encourage the use of the various macros defined in
-\href{https://github.com/trevorcampbell/shortex/}{ShorTeX},
-so do your best. It makes things easier to read, but also provides lots of
-necessary mathematics definitions that render nicely. 
-
-Be careful with things like KL divergence and conditional probability
-statements. I find that 
-\[\KL(q\ \Vert\ p)\]
-looks much better than 
-\[\KL(q||p),\] 
-and I similarly prefer 
-\[
-Y\ |\ X \sim \Norm(X,\ \sigma^2) 
-\quad\textrm{to}\quad Y | X \sim \Norm(X,\sigma^2).
-\] 
-Note that the reals are $\reals^p$. There is also
-\[
-\shbeta = \argmin_{\beta \in \reals^p} \frac{1}{2n}\norm{\sky - \skX\beta}_2^2 + 
-\lambda \norm{\beta}_1,
-\]
-and (with automatic sizing of the norm),
-\[
-\shbeta = \argmin_{\beta \in \reals^p} \frac{1}{2n}\norm*{\frac{y}{1} - X\beta}_2^2 + 
-\lambda \norm*{\beta}_1.
-\]
-
-Note that the indicator function looks like $\1\{\cdot\}$, but I sometimes
-prefer $\mathbf{1}\{\cdot\}$.
-
-
-
-
-\subsection{Cleveref}\label{sec:clever}
-
-We prefer to use cleveref to get nice references to things. For example, you can
-say that \cref{eq:1} was printed in \cref{sec:intro}. No need to write out
-things like ``Section''.
-
-\section{Some best practices}
-
-Some of these are taken from
-\href{http://faculty.marshall.usc.edu/Jacob-Bien/papers/manuscript-checklist.pdf}{Jacob
-Bien}. Note the use of the ShorTeX itemize environment style below.
-
-\bitem
-\item Section titles should be all title case or all sentence case. Don't mix and match.
-\item I prefer data set to dataset.
-\item I prefer data to be singular. There remains debate on this point. When you
-use the word ``datum'' in a sentence, then we can argue. Data is a mass noun,
-like ``information''. We don't say ``How many data are enough?'', we say ``How much
-data is enough.'' Enough said.  
-\item Terminology is lower case, unless it's a person's name: \Nystrom extension
-and lasso.
-\item Equations are parts of the sentence. Displayed equations almost always
-have a comma or period after. Very rarely is there a colon or comma \emph{before}
-a displayed equation.
-\item Don't start sentences with math (``$\Sigma$ is the covariance of
-$\skX$.'') or the name of a software package that's lowercase, \eg
-``\texttt{glmnet} is my favourite software''.
-\item Don't use contractions.
-\item No need to put dollar signs around numbers: 12 versus $12$.
-\item DO put dollar signs around math: $p$ not p.
-\item Use $x\gg y$ not $x >>y$.
-\item Careful with parentheticals and references. Wrong: (see, \eg
-\citet{Akaike1973}). Right: (see, \eg \citealp{Akaike1973}).
-\item Never use \texttt{eqnarray}, always use \texttt{align}. Note that ShorTeX
-makes \verb+\[   \]+ into an align environment, so you can just use that always.
-\item For editing purposes, it is much better if the text is hard-wrapped rather
-than soft wrapped.
-\eitem
-
-\subsection{Tables}
-
-\Cref{tab:1} is a nice looking table. Strive for these.
+We also explored an extension to MAPLE that incorporates uncertainty in LDSC estimates. If developed into a full paper, future goals would include incorporating estimation of $\boldsymbol \Omega$ into the Gibbs sampling step of the MAPLE architecture, extending the framework to a model where $\boldsymbol \Omega$ is inferred jointly with $\alpha$ . We would also want to quantify sensitivity and robustness of MAPLE to LDSC misspecification by simulating data where LDSC assumptions fail. Additionally, we would want to compare to alternative LDSC formulations (e.g., i-LDSC, cov-LDSC). To validate findings, we simulate data or  analyze well-established causal exposure-outcome pairs (for example, LDL cholsterol and coronary heart disease) on real-word data. 
 
 \btab
 \bcent
-\btabr{@{}lr@{}}
+\btabr{@{}lrr@{}@{}}
 \toprule
-Ingredient & Quantity\\
+Estimate & Original MAPLE &LSDC simulated MAPLE\\
 \midrule
-Fusili & 100 g\\
-Eggs & 2\\
-Salt & 1 tsp\\
-Guanciale & 50 g\\
-Pepper & \nicefrac{1}{2} tsp\\
-Grated parmesan & \nicefrac{1}{4} c\\
+Mean ($\hat \alpha$) & -0.0416 & -0.0423  \\
+SE$(\hat \alpha)$ &  0.0324 & 0.0352\\
 \bottomrule
 \etabr
-\caption{This is a nice looking table. It might make carbonara.}
+\caption{Comparison of the causal effect estimate $\hat \alpha$ and standard error between the original MAPLE and the LDSC simulated MAPLE.}
 \label{tab:1}
 \ecent
 \etab
 
-\section{Discussion} 
 
-We made amazing contributions to the world of musical fractal pasta 
-\citep{McDonald2017,Tibshirani2013}. We use Natbib, so be sure to use
-\citep{Stein1981} for parenthetical references. Or you can say, according to
-\citet{HastieTibshirani2009}, we should strive to balance truth and lies.
+If expanded into a full paper, improving uncertainty quantification in MAPLE can help make MR analyses more robust to complex sample structures and model misspecification. Ultimately, this has the ability to help us better understand the mechanisms underlying complex diseases and can provide more information to better support drug design.
+
 
 
 \bibliographystyle{rss}
